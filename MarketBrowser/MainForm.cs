@@ -16,6 +16,7 @@ namespace MarketBrowser
         public MainForm()
         {
             InitializeComponent();
+            Conflict_Test();
         }
 
         string str = "";
@@ -44,6 +45,14 @@ namespace MarketBrowser
 
             */
             sr.Close();
+        }
+
+        private void Conflict_Test()
+        {
+            for (int i = 2; i < 10; i++)
+            {
+                Console.WriteLine("{0} * {1} = {2}", i, i,i * i);
+            }
         }
     }
 }
