@@ -49,9 +49,9 @@ namespace MarketBrowser
 
         private void Conflict_Test()
         {
-            for (int i = 2; i < 10; i++)
+            for (int i = 10; i > 0; i--)
             {
-                Console.WriteLine("{0} * {1} = {2}", i, i,i * i);
+                Console.WriteLine("{0} = {1} * {2}", i * i, i,i);
             }
         }
     }
