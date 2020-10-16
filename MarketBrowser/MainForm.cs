@@ -3,9 +3,11 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
 using System.Drawing;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
@@ -87,7 +89,77 @@ namespace MarketBrowser
 
         private string[] ParseCSVLine(string line) // 과제 코드
         {
-            return line.Split(',');
+            //Regex parse = new Regex(",(?=(?:[^\"]*\"[^\"]*\")*(?![^\"]*\"))");
+            //string[] str = parse.Split(line);
+
+            //for(int i = 0; i < str.Length; i++)
+            //{
+            //    str[i] = str[i].TrimStart('"');
+            //    str[i] = str[i].TrimEnd('"');
+            //}
+            //char[] temp = new char[line.Length];
+            string [] str = new string[12];
+            int quotes, comma = 0;
+            //for(int i = 0; i < line.Length; i++)
+           // {
+            //    temp[i] = line[i];
+            //}
+            for(int i = 0; i < line.Length; i++)
+            {
+                quotes = 0;
+                int j = 0;
+                if(line[i] == '\"')
+                {
+                    i++;
+                    quotes++;
+                    string str_temp = "";
+                    for(j = 1; j < line.Length; j++)
+                    {
+                        str_temp += line[j];
+                        if(line[i + j] == '\"')
+                            quotes++;
+                        if(i + j == line.Length || quotes == 2)
+                        {
+                            break;
+                        }
+                    }
+                    str[comma++] = str_temp;
+                    i++;
+                }
+                else if(line[i] == ',')
+                {
+                    string str_temp = "";
+                    for(j = 0; j < line.Length; j++)
+                    {
+                        if(i + j == line.Length || line[i + j] == ',')
+                        {
+                            break;
+                        }
+                        str_temp += line[i];
+                    }
+                    str[comma++] = str_temp;
+                }
+                else
+                {
+                    string str_temp = "";
+                    for(j = 0; j < line.Length; j++)
+                    {
+                        if(i + j == line.Length || line[i + j] == ',')
+                        {
+                            break;
+                        }
+                        str_temp += line[i + j];
+                    }
+                    str[comma++] = str_temp;
+                }
+                i += j;
+            }
+
+            return str;
+         //   if (line[0] == '"')
+         //       return line.Trim('"').Split(',');
+                //return line.Trim('"').Split(new string[] {"\",\""}, StringSplitOptions.None);
+         //   return line.Split(',');
         }
         private List<List<string>> MakeRowbasedDataStructure()
         {
@@ -99,18 +171,17 @@ namespace MarketBrowser
 
             List<List<string>> data = new List<List<string>>();
 
-            int row = 0;
+            //int row = 0;
             while (sr.EndOfStream == false)
             {
                 line = sr.ReadLine();
-                var values = line.Split(',');
+                var values = ParseCSVLine(line);
 
                 // "시장(구, 우리시장)"
                 // 중간에 , 제대로 처리하기. (Parser)
                 // parseCSVLine(string line) 함수 만들기
 
                 data.Add(values.ToList());
-
                 //if (row++ == 10)
                     //break;
             }
@@ -151,8 +222,8 @@ namespace MarketBrowser
         private void buttonOpenCSV_Click(object sender, EventArgs e)
         {
             List<List<string>> data = MakeRowbasedDataStructure();
-            //printRowData_rowbased(data);
-            printColumnData_rowbased(data, 1);
+            printRowData_rowbased(data);
+            //printColumnData_rowbased(data, 1);
             //List<List<string>> data = MakeColumnnarDataStructure();
             //printColumnData_columbased(data , 1);
             //printRowData_columbased(data);

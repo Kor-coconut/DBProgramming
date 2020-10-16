@@ -71,6 +71,7 @@
 
         private System.Windows.Forms.Button buttonOpenCSV;
         private System.Windows.Forms.TextBox textBoxCSVViewer;
+
     }
 }
 
