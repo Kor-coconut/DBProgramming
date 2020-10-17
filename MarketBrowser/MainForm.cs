@@ -89,34 +89,23 @@ namespace MarketBrowser
 
         private string[] ParseCSVLine(string line) // 과제 코드
         {
-            //Regex parse = new Regex(",(?=(?:[^\"]*\"[^\"]*\")*(?![^\"]*\"))");
-            //string[] str = parse.Split(line);
-
-            //for(int i = 0; i < str.Length; i++)
-            //{
-            //    str[i] = str[i].TrimStart('"');
-            //    str[i] = str[i].TrimEnd('"');
-            //}
-            //char[] temp = new char[line.Length];
+            // 방법 1
+            /*
             string [] str = new string[12];
             int quotes, comma = 0;
-            //for(int i = 0; i < line.Length; i++)
-           // {
-            //    temp[i] = line[i];
-            //}
             for(int i = 0; i < line.Length; i++)
             {
                 quotes = 0;
                 int j = 0;
-                if(line[i] == '\"')
+                if(line[i] == '\"') // line을 하나씩 읽다가 quotes를 만나면 진입
                 {
                     i++;
                     quotes++;
                     string str_temp = "";
                     for(j = 1; j < line.Length; j++)
                     {
-                        str_temp += line[j];
-                        if(line[i + j] == '\"')
+                        str_temp += line[j]; // 첫 quotes 뒤는 같은 column
+                        if(line[i + j] == '\"') // quotes를 한 번 더 만나면 종료
                             quotes++;
                         if(i + j == line.Length || quotes == 2)
                         {
@@ -126,7 +115,7 @@ namespace MarketBrowser
                     str[comma++] = str_temp;
                     i++;
                 }
-                else if(line[i] == ',')
+                else if(line[i] == ',') // comma를 만나면 진입
                 {
                     string str_temp = "";
                     for(j = 0; j < line.Length; j++)
@@ -154,12 +143,17 @@ namespace MarketBrowser
                 }
                 i += j;
             }
+*/
+            // 방법 2
+            Regex parse = new Regex(",(?=(?:[^\"]*\"[^\"]*\")*(?![^\"]*\"))"); // parse할 문자열 정규식으로 정의
+            string[] str = parse.Split(line); // 위의 정규식으로 line을 자름
 
+            for(int i = 0; i < str.Length; i++)
+            {
+                str[i] = str[i].TrimStart('"');
+                str[i] = str[i].TrimEnd('"');
+            }
             return str;
-         //   if (line[0] == '"')
-         //       return line.Trim('"').Split(',');
-                //return line.Trim('"').Split(new string[] {"\",\""}, StringSplitOptions.None);
-         //   return line.Split(',');
         }
         private List<List<string>> MakeRowbasedDataStructure()
         {
