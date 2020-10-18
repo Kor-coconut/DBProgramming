@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
 using System.Drawing;
+using System.Drawing.Design;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -155,13 +156,28 @@ namespace MarketBrowser
             }
             return str;
         }
-        private List<List<string>> MakeRowbasedDataStructure()
-        {
-            StreamReader sr = new StreamReader(new FileStream("market.csv", FileMode.Open), Encoding.Default);
 
+        Dictionary<string, int> headerIndexDict = new Dictionary<string, int>();
+
+        private void SetHeaderList(string header)
+        {
+            var values = ParseCSVLine(header);
+            listBoxHeaders.Items.Clear();
+
+            for (int i = 0; i < values.Length; i++)
+            {
+                string column = values[i];
+                listBoxHeaders.Items.Add(column);
+                headerIndexDict[column] = i;
+            }
+        }
+
+        private List<List<string>> MakeRowbasedDataStructure(string filename)
+        {
+            StreamReader sr = new StreamReader(new FileStream(filename, FileMode.Open), Encoding.Default);
 
             var line = sr.ReadLine();
-            var headers = line.Split(',');
+            SetHeaderList(line);
 
             List<List<string>> data = new List<List<string>>();
 
@@ -188,7 +204,7 @@ namespace MarketBrowser
             return data;
         }
 
-        private void printRowData_rowbased(List<List<string>> data)
+        private void printRowData_rowbased(List<List<string>> data, TextBox textbox)
         {
             string str = "";
             foreach (List<string> rowlist in data)
@@ -199,8 +215,8 @@ namespace MarketBrowser
                 }
                 str += "\r\n";
             }
-            textBoxCSVViewer.Text = str;
-        }
+            textbox.Text = str;
+        } 
 
         private void printColumnData_rowbased(List<List<string>> data, int colIdx)
         {
@@ -213,14 +229,76 @@ namespace MarketBrowser
         }
 
 
+        List<List<string>> data;
         private void buttonOpenCSV_Click(object sender, EventArgs e)
         {
-            List<List<string>> data = MakeRowbasedDataStructure();
-            printRowData_rowbased(data);
+            // 파일 탐색기 열어줌
+            var FD = new OpenFileDialog();
+            DialogResult dResult = FD.ShowDialog();
+
+            if (dResult == DialogResult.OK)
+            {
+                string filename = FD.FileName;
+                data = MakeRowbasedDataStructure(filename);
+                printRowData_rowbased(data, textBoxCSVViewer);
+            }
+
             //printColumnData_rowbased(data, 1);
             //List<List<string>> data = MakeColumnnarDataStructure();
             //printColumnData_columbased(data , 1);
             //printRowData_columbased(data);
+        }
+
+        private void buttonSearch_Click(object sender, EventArgs e)
+        {
+            string keyword = textBoxSearchKeyword.Text;
+
+            if (keyword == "")
+            {
+                MessageBox.Show("검색 키워드를 입력하세요.", "확인");
+                return;
+            }
+
+            if(listBoxHeaders.SelectedItem == null)
+            {
+                MessageBox.Show("검색대상 컬럼을 선택하세요.", "확인");
+                return;
+            }
+            string column = listBoxHeaders.SelectedItem.ToString();
+            if (column == "")
+            {
+                MessageBox.Show("검색대상 칼럼을 선택하세요.", "확인");
+                return;
+            }
+
+            MessageBox.Show("키워드 = " + keyword + " 칼럼 = " + column, "확인");
+
+            DoSearch(keyword, column);
+        }
+
+        private void DoSearch(string keyword, string column)
+        {
+            // 1. 대상 컬럼 확인
+            if(headerIndexDict.ContainsKey(column) == false)
+            {
+                MessageBox.Show("검색대상 컬럼을 선택하세요", "확인");
+                return;
+            }
+
+            int targetCoumnIndex = headerIndexDict[column];
+
+            // 2. 대상 컬럼에서 키워드를 포함하는지 확인
+            List<List<string>> resultData = new List<List<string>>();
+            foreach(List<string> row in data)
+            {
+                string value = row[targetCoumnIndex];
+                if(value.Contains(keyword))
+                {
+                    resultData.Add(row);
+                }
+            }
+
+            printRowData_rowbased(resultData, textBoxSearchResult);
         }
     }
 }
